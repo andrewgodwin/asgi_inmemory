@@ -7,7 +7,8 @@ Lifespan Protocol
 The Lifespan ASGI sub-specification outlines how to communicate
 lifespan events such as startup and shutdown within ASGI. This refers to the
 lifespan of the main event loop. In a multi-process environment there will be
-lifespan events in each process.
+lifespan events in each process. In a multi-thread environment there will be
+lifespan events in each thread.
 
 The lifespan messages allow for an application to initialise and
 shutdown in the context of a running event loop. An example of this
@@ -16,15 +17,21 @@ connection pool to release the connections.
 
 A possible implementation of this protocol is given below::
 
+    database = anyio.lowlevel.RunVar("database")
+
     async def app(scope, receive, send):
         if scope['type'] == 'lifespan':
             while True:
                 message = await receive()
                 if message['type'] == 'lifespan.startup':
                     ... # Do some startup here!
+                    db = Database()
+                    database.set(db)
+                    await db.connect()
                     await send({'type': 'lifespan.startup.complete'})
                 elif message['type'] == 'lifespan.shutdown':
                     ... # Do some shutdown here!
+                    await db.disconnect()
                     await send({'type': 'lifespan.shutdown.complete'})
                     return
         else:
