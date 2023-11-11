@@ -75,6 +75,23 @@ standard Python type annotations and standards like OpenAPI, JSON Schema, and OA
 Supports HTTP and WebSockets.
 
 
+Flama
+-----
+
+*Stable* / https://github.com/vortico/flama
+
+Flama is a data-science oriented framework to rapidly build modern and robust machine 
+learning (ML) APIs. The main aim of the framework is to make ridiculously simple the 
+deployment of ML APIs. With Flama, data scientists can now quickly turn their ML models 
+into asynchronous, auto-documented APIs with just a single line of code. All in just few 
+seconds!
+
+Flama comes with an intuitive CLI, and provides an easy-to-learn philosophy to speed up 
+the building of highly performant GraphQL, REST, and ML APIs. Besides, it comprises an 
+ideal solution for the development of asynchronous and production-ready services, 
+offering automatic deployment for ML models. 
+
+
 Quart
 -----
 
