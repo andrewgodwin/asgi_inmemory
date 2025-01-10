@@ -278,7 +278,8 @@ async def test_wsgi_multiple_start_response():
 
 
 @pytest.mark.asyncio
-async def test_wsgi_multi_body():
+@pytest.mark.parametrize("has_content_length", [True, False])
+async def test_wsgi_multi_body(has_content_length):
     """
     Verify that multiple http.request events with body parts are all delivered
     to the WSGI application.
@@ -286,7 +287,14 @@ async def test_wsgi_multi_body():
 
     def wsgi_application(environ, start_response):
         infp = environ["wsgi.input"]
-        body = infp.read(12)
+        if has_content_length:
+            # this wsgi application reads the content length header and operates on that
+            body = infp.read(12)
+        else:
+            # this wsgi application supports [wsgi.input_terminated](https://gist.github.com/mitsuhiko/5721547)
+            # and reads until EOF.
+            assert environ["wsgi.input_terminated"]
+            body = infp.read()
         assert body == b"Hello World!"
         start_response("200 OK", [])
         return []

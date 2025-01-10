@@ -67,6 +67,7 @@ class WsgiToAsgiInstance:
             "wsgi.version": (1, 0),
             "wsgi.url_scheme": scope.get("scheme", "http"),
             "wsgi.input": body,
+            "wsgi.input_terminated": True,  # https://gist.github.com/mitsuhiko/5721547
             "wsgi.errors": BytesIO(),
             "wsgi.multithread": True,
             "wsgi.multiprocess": True,
