@@ -22,15 +22,15 @@ A possible implementation of this protocol is given below::
 
     async def app(scope, receive, send):
         if scope['type'] == 'lifespan':
-            while True:
-                message = await receive()
-                if message['type'] == 'lifespan.startup':
-                    ... # Do some startup here!
-                    await send({'type': 'lifespan.startup.complete'})
-                elif message['type'] == 'lifespan.shutdown':
-                    ... # Do some shutdown here!
-                    await send({'type': 'lifespan.shutdown.complete'})
-                    return
+            message = await receive()
+            assert message['type'] == 'lifespan.startup'
+            ... # Do some startup here!
+            await send({'type': 'lifespan.startup.complete'})
+
+            message = await receive()
+            assert message['type'] == 'lifespan.shutdown'
+            ... # Do some shutdown here!
+            await send({'type': 'lifespan.shutdown.complete'})
         else:
             pass # Handle other types
 
