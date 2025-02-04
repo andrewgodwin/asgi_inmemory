@@ -108,7 +108,7 @@ def test_stateless_server(server):
     Clients can communicate to other client by name through server"""
 
     loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+    asyncio.get_event_loop_policy().set_event_loop(loop)
     server.handle = partial(server_auto_close, fut=server.handle(), timeout=1.0)
 
     client1 = Client(name="client1")
@@ -136,7 +136,7 @@ def test_stateless_server(server):
 def test_server_delete_instance(server):
     """The max_applications of Server is 10. After 20 times register, application number should be 10."""
     loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+    asyncio.get_event_loop_policy().set_event_loop(loop)
     server.handle = partial(server_auto_close, fut=server.handle(), timeout=1.0)
 
     client1 = Client(name="client1")

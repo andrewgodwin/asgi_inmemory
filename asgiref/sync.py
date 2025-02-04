@@ -259,7 +259,7 @@ class AsyncToSync(Generic[_P, _R]):
         """
         Runs the given event loop (designed to be called in a thread).
         """
-        asyncio.set_event_loop(loop)
+        asyncio.get_event_loop_policy().set_event_loop(loop)
         try:
             loop.run_until_complete(coro)
         finally:
@@ -289,7 +289,7 @@ class AsyncToSync(Generic[_P, _R]):
                     loop.run_until_complete(loop.shutdown_asyncgens())
             finally:
                 loop.close()
-                asyncio.set_event_loop(self.main_event_loop)
+                asyncio.get_event_loop_policy().set_event_loop(self.main_event_loop)
 
     def __get__(self, parent: Any, objtype: Any) -> Callable[_P, _R]:
         """
