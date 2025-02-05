@@ -192,12 +192,14 @@ class AsyncToSync(Generic[_P, _R]):
         # Make a future for the return information
         call_result: "Future[_R]" = Future()
 
-        # Make a CurrentThreadExecutor we'll use to idle in this thread - we
-        # need one for every sync frame, even if there's one above us in the
-        # same thread.
+        # Make a CurrentThreadExecutor we'll use to idle in this thread, unless
+        # we can reuse one above us in the same thread.
         old_executor = getattr(self.executors, "current", None)
-        current_executor = CurrentThreadExecutor()
-        self.executors.current = current_executor
+        if old_executor is None:
+            current_executor = CurrentThreadExecutor()
+            self.executors.current = current_executor
+        else:
+            current_executor = old_executor
 
         # Wrapping context in list so it can be reassigned from within
         # `main_wrap`.

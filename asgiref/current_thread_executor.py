@@ -55,7 +55,8 @@ class CurrentThreadExecutor(Executor):
 
     def __init__(self) -> None:
         self._work_thread = threading.current_thread()
-        self._work_queue: queue.Queue[Union[_WorkItem, "Future[Any]"]] = queue.Queue()
+        self._work_queue: queue.Queue[Union[_WorkItem, None]] = queue.Queue()
+        self._level = 0
         self._broken = False
 
     def run_until_future(self, future: "Future[Any]") -> None:
@@ -68,20 +69,21 @@ class CurrentThreadExecutor(Executor):
             raise RuntimeError(
                 "You cannot run CurrentThreadExecutor from a different thread"
             )
-        future.add_done_callback(self._work_queue.put)
-        # Keep getting and running work items until we get the future we're waiting for
-        # back via the future's done callback.
+        future.add_done_callback(lambda future: self._work_queue.put(None))
+        self._level += 1
+        # Keep getting and running work items until the future we're waiting for is
+        # done.
         try:
-            while True:
+            while not future.done():
                 # Get a work item and run it
                 work_item = self._work_queue.get()
-                if work_item is future:
-                    return
-                assert isinstance(work_item, _WorkItem)
+                if work_item is None:
+                    continue
                 work_item.run()
                 del work_item
         finally:
-            self._broken = True
+            self._level -= 1
+            self._broken = self._level == 0
 
     def _submit(
         self,

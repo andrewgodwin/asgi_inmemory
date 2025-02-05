@@ -1208,3 +1208,33 @@ async def test_sync_to_async_overlapping_kwargs() -> None:
 
     # SyncToAsync.__call__.loop.run_in_executor has a param named `task_context`.
     await test_function(task_context=1)
+
+
+def test_nested_task() -> None:
+    async def inner() -> asyncio.Task[None]:
+        return asyncio.create_task(sync_to_async(print)("inner"))
+
+    async def main() -> None:
+        task = await sync_to_async(async_to_sync(inner))()
+        await task
+
+    async_to_sync(main)()
+
+
+def test_nested_task_later() -> None:
+    def later(fut: asyncio.Future[asyncio.Task[None]]) -> None:
+        task = asyncio.create_task(sync_to_async(print)("later"))
+        fut.set_result(task)
+
+    async def inner() -> asyncio.Future[asyncio.Task[None]]:
+        loop = asyncio.get_running_loop()
+        fut = loop.create_future()
+        loop.call_later(0.1, later, fut)
+        return fut
+
+    async def main() -> None:
+        fut = await sync_to_async(async_to_sync(inner))()
+        task = await fut
+        await task
+
+    async_to_sync(main)()
